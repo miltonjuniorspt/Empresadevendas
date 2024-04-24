@@ -1,0 +1,32 @@
+CREATE OR REPLACE PROCEDURE relatorio_quantidade_produtos_comprados()
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    data_inicio DATE;
+    data_fim DATE;
+BEGIN
+    -- Define as datas de início e fim para o levantamento diário
+    data_inicio := CURRENT_DATE; -- data atual
+    data_fim := CURRENT_DATE; -- data atual
+
+    -- Limpa a tabela temporária se existir
+    DROP TABLE IF EXISTS relatorio_quantidade_produtos;
+
+    -- Cria a tabela temporária para armazenar o relatório
+    CREATE TEMP TABLE relatorio_quantidade_produtos AS
+    SELECT DATE(data_compra) AS data_compra,
+           COUNT(*) AS quantidade_produtos
+    FROM compras
+    WHERE DATE(data_compra) BETWEEN data_inicio AND data_fim
+    GROUP BY DATE(data_compra)
+    ORDER BY DATE(data_compra);
+
+    -- Exibe o relatório
+    SELECT * FROM relatorio_quantidade_produtos;
+
+    -- Remove a tabela temporária
+    DROP TABLE IF EXISTS relatorio_quantidade_produtos;
+END;
+$$;
+
+CALL relatorio_quantidade_produtos_comprados();
